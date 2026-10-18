@@ -1,0 +1,62 @@
+{
+  "name": "Geom2",
+  "nickname": "Geom2",
+  "schemaType": "Layout2",
+  "inputs": [
+    {
+      "name": "JSON",
+      "access": "list",
+      "optional": false,
+      "typeHint": "string",
+      "description": "A LIST of independent OUTERMOST Layout2 instance JSONs. Item i's whole tree is output under outer branch {i}. Each node's own borderOverrides (from pms-layout2-border-override-v0) are applied here, per-cell -- see the module docstring for the offset rules. A borderOverride carrying its own wallLayout hosts an upright wall child on that matched boundary (its optional wallHeight, from the override's WallHeight input, is the total the wall's CellLengths 'fr' rows resolve against), found lazily via direct cell-adjacency (no general Borders/Topology output exists) -- a DIVERGED interior boundary (an INDEPENDENT offset) gets TWO wall instances, one per side's own actual edge, the non-leading (Between[1]) side automatically mirrored so the same content stays aligned on both sides. Wall placements from the SAME node sharing the SAME wallLayout 'label' (e.g. two opposite walls of the same type) land in ONE branch together instead of separate ones -- scoped to that one node's own local set of walls, see the module docstring. A node's own 'mirror' field (set via pms-layout2-v0's Mirror input) reverses its own CellWidths/CellLabels column order and cascades to every descendant, including its own walls -- see the module docstring's MIRROR section."
+    },
+    {
+      "name": "Plane",
+      "access": "item",
+      "optional": true,
+      "typeHint": "plane",
+      "description": "A TRANSFORM applied to every item's own plane (from its JSON, or World XY). Unwired = identity."
+    },
+    {
+      "name": "Depth",
+      "access": "item",
+      "optional": true,
+      "typeHint": "integer",
+      "description": "0-based path-length filter, same convention as pms-layout-geom-v0.py -- unwired = Depth 0 (the top parent's own boundary). Depth numbers match the ORIGINAL Geom exactly at every level: Depth 1 = top-level spaces, Depth 2 = a Depth-1 space's own hosted child's top-level spaces, etc -- no offset, at any nesting depth. A WALL's own content (door/frame/window/...) lands at that SAME Depth its host space's own hosted child would -- host's own Depth + 1 -- since it recurses directly into the host's own space, not a separate wrapped address; several wall placements (and an ordinary hosted child, if the host has one) share that one index sequence without colliding, see the module docstring's WALL LAYOUTS section."
+    },
+    {
+      "name": "Union",
+      "access": "item",
+      "optional": true,
+      "typeHint": "boolean",
+      "description": "Default false: each space's own branch holds one plain rectangle PER GRID CELL (never a merged shape -- the whole point of this prototype). true: each BARE-labelled branch (no '[k]' suffix) collapses to its own real geometric Boolean union instead (Curve.CreateBooleanUnion) -- usually one outline, or more than one if that group's own cells have genuinely diverged into separate pieces. Pure output convenience; never consulted for offsets. A '[k]'-suffixed label is deliberately SKIPPED by Union even with several cells -- the suffix already means 'keep these separate on purpose'."
+    },
+    {
+      "name": "Cells",
+      "access": "list",
+      "optional": true,
+      "typeHint": "string",
+      "description": "OPTIONAL SELECTOR: a list of labels to further narrow the Cells (and, in lockstep, Labels) output, applied AFTER Depth filtering. A cell is kept if its own label OR that label's base (suffix stripped, e.g. 'mod' matches 'mod[0]'/'mod[1]') is in this list. Any item may itself be a comma-separated list of labels ('a,b', no brackets) to match several at once. Unwired = no filtering, same as not having this input at all. Same grammar and behavior as the original Geom's own 'Cells' selector -- there's no 'Borders' equivalent here since Borders/Topology aren't a general output on Geom2."
+    }
+  ],
+  "outputs": [
+    {
+      "name": "Cells",
+      "access": "tree",
+      "typeHint": "curve",
+      "description": "One branch per SPACE (not per node), matching the original Geom's own Depth numbers exactly: {i;j} = item i's j-th top-level space (row-major, Depth 1), holding N plain rectangles (one per grid cell in that space) or 1 traced outline if Union is on and the label isn't '[k]'-suffixed. A space's own hosted child recurses into that SAME branch's own children, {i;j;j2} for the child's j2-th top-level space (Depth 2) -- one segment deeper, never colliding with {i;j}'s own item(s). A wall hosted on a border recurses into that SAME branch too, exactly like an ordinary hosted child -- its own content ({i;j;k}, also Depth 2) picks up whichever indices the host's own regular child (if any) hasn't already claimed, so several wall placements and an ordinary child can all share one host space's own numbering without colliding, see the module docstring's WALL LAYOUTS section."
+    },
+    {
+      "name": "Labels",
+      "access": "tree",
+      "typeHint": "string",
+      "description": "That space's own label, repeated once per Cells item in the same branch -- parallel to Cells."
+    },
+    {
+      "name": "Warnings",
+      "access": "list",
+      "typeHint": "string",
+      "description": "INFORMATIONAL notes describing correct, intended behavior that's still worth knowing about (e.g. a diverged interior boundary getting two mirrored wall instances) -- NOT problems, and deliberately never shown on the component's own runtime-message balloon (unlike a genuine issue, which still appears there as an orange Warning as always). Plain data instead, so you only see it when you actually look -- wire a Panel, filter it, count it, whatever's useful. Empty list (not null) when there's nothing to report, except when JSON itself is unwired/empty, where it's null like every other output."
+    }
+  ]
+}

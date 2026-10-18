@@ -1,0 +1,50 @@
+{
+  "name": "LayoutBorderOverride2",
+  "nickname": "LayoutBorderOverride2",
+  "schemaType": "BorderOverride2",
+  "inputs": [
+    {
+      "name": "JSON",
+      "access": "item",
+      "optional": true,
+      "typeHint": "string",
+      "description": "(optional) BorderOverride2 JSON string used as the merge base."
+    },
+    {
+      "name": "Between",
+      "access": "list",
+      "optional": true,
+      "typeHint": "string",
+      "description": "(required in CREATE mode) 1-3 items: a pair ['a','b'] (order-insensitive matching, but ORDER controls Offset's direction), a ring [label,'*'], or the global ['*','*']. 'EXT' is a valid ring anchor meaning the grid's own edge; 'INT' is the mirror -- every interior boundary (touches two real, different labels, never off-grid) -- for BOTH Offset and a wallLayout. Matches base labels too ('m' matches every 'm[k]'). Global has no effect -- Offset needs a specific anchor. Optional 3rd item: a side filter, Top/Bottom/Left/Right (or T/B/L/R), or a comma-separated set of them ('T,L'). Left blank (or '*') applies to every side."
+    },
+    {
+      "name": "Offset",
+      "access": "item",
+      "optional": true,
+      "typeHint": "number",
+      "description": "(optional, mm) See pms-layout-geom2-v0.py's own docstring for the full mechanism. A pair with at least one plain (childless) side resizes the shared track (SHARED); a ring, an EXT pair, or a pair where BOTH sides host a child shifts the matched cell(s)' own drawn shape independently (INDEPENDENT), never touching a sibling's track. Every check Geom2 makes is a direct, local comparison between one grid cell and its immediate neighbour -- no bounding box, no merged-shape approximation."
+    },
+    {
+      "name": "WallLayoutJSON",
+      "access": "item",
+      "optional": true,
+      "typeHint": "string",
+      "description": "(optional) A nested Layout2 document hosting an upright wall child on the matched border -- consumed by Geom2. CellWidths is EITHER exactly ['auto'] (one column, filled from the matched border's own actual length -- a plain wall body, no width-wise subdivision) OR a list with no 'auto' entry but at least one 'fr' track (e.g. ['400','1fr','400'] -- fixed frame pieces either side of a window column that soaks up whatever length is left over), resolved against the matched border's own actual length exactly like any other Layout2 grid. Any hosted cell may still carry its own childLayouts, same as any Layout2 node."
+    },
+    {
+      "name": "WallHeight",
+      "access": "item",
+      "optional": true,
+      "typeHint": "number",
+      "description": "(optional, mm) The wall's own height -- the total its WallLayoutJSON's CellLengths resolve against. A wall's width always has a real total (the matched border's own length), but its height has none, so a '1fr' in CellLengths would resolve to 0mm; with WallHeight set, 'fr' rows share whatever the fixed rows leave over (e.g. CellLengths ['900','1fr','300'] with WallHeight 2600 -> 900 / 1400 / 300). Unset = no total, same as before this input existed. Only meaningful alongside WallLayoutJSON."
+    }
+  ],
+  "outputs": [
+    {
+      "name": "JSON",
+      "access": "item",
+      "typeHint": "string",
+      "description": "BorderOverride2 JSON string. Feeds one item of Layout2's BorderOverridesJSON input."
+    }
+  ]
+}

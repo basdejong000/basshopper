@@ -1,0 +1,75 @@
+{
+  "name": "Layout2",
+  "nickname": "Layout2",
+  "schemaType": "Layout2",
+  "inputs": [
+    {
+      "name": "JSON",
+      "access": "item",
+      "optional": true,
+      "typeHint": "string",
+      "description": "(optional) Layout2 JSON string used as the merge base."
+    },
+    {
+      "name": "Label",
+      "access": "item",
+      "optional": true,
+      "typeHint": "string",
+      "description": "(required when nested) matches an entry in the parent's CellLabels grid."
+    },
+    {
+      "name": "Mirror",
+      "access": "item",
+      "optional": true,
+      "typeHint": "boolean",
+      "description": "Mirrors this node's own CellWidths/CellLabels column order (WIDTH axis only -- CellLengths/row order never flips) and CASCADES to every descendant automatically (hosted children and this node's own walls all mirror too, no per-node opt-out) -- consumed by Geom2, not this component. Mirroring one apartment node mirrors the whole apartment into a mirrored copy of itself, not just its own outermost grid. Unwired = not mirrored, same as False."
+    },
+    {
+      "name": "Boundary",
+      "access": "item",
+      "optional": true,
+      "description": "(root use only) a Rectangle3d (plane + width + height). Its plane is copied straight into this document's 'plane' field; its width/height seed CellWidths/CellLengths as a single fixed-mm track EACH, but only when you haven't authored your own."
+    },
+    {
+      "name": "CellWidths",
+      "access": "list",
+      "optional": true,
+      "description": "Column track sizes (West-to-East): a positive number (mm), 'Nfr', or 'auto'. 'minmax()' not yet resolved."
+    },
+    {
+      "name": "CellLengths",
+      "access": "list",
+      "optional": true,
+      "description": "Row track sizes (North-to-South): same grammar as CellWidths."
+    },
+    {
+      "name": "CellLabels",
+      "access": "item",
+      "optional": true,
+      "typeHint": "string",
+      "description": "Per-cell label grid: rows separated by newlines, cells by commas. Row 0 = North, column 0 = West."
+    },
+    {
+      "name": "ChildrenJSON",
+      "access": "list",
+      "optional": true,
+      "typeHint": "string",
+      "description": "Child Layout2 JSON strings (this same component's JSON output), one per nested region, matched by Label."
+    },
+    {
+      "name": "BorderOverridesJSON",
+      "access": "list",
+      "optional": true,
+      "typeHint": "string",
+      "description": "Border-override JSON strings (from pms-layout2-border-override-v0), one per override on THIS node's own grid -- each selects a border via 'between' and carries an optional 'offset' (mm). See pms-layout-geom2-v0.py's own docstring for how Offset applies to atomic cells."
+    }
+  ],
+  "outputs": [
+    {
+      "name": "JSON",
+      "access": "item",
+      "typeHint": "string",
+      "description": "Layout2 JSON string. The outermost instance's JSON feeds pms-layout-geom2-v0's (list-access) JSON input."
+    }
+  ]
+}

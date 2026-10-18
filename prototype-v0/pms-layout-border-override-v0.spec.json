@@ -1,0 +1,43 @@
+{
+  "name": "LayoutBorderOverride",
+  "nickname": "LayoutBorderOverride",
+  "schemaType": "BorderOverride",
+  "inputs": [
+    {
+      "name": "JSON",
+      "access": "item",
+      "optional": true,
+      "typeHint": "string",
+      "description": "(optional) BorderOverride JSON string used as the merge base."
+    },
+    {
+      "name": "Between",
+      "access": "list",
+      "optional": true,
+      "typeHint": "string",
+      "description": "(required in CREATE mode) 1-3 items: a pair ['a','b'] (order-insensitive matching, but ORDER controls Offset's direction), a ring [label,'*'], or the global ['*','*']. 'EXT' is a valid label meaning the node's own perimeter. Matches base labels too ('mod' matches every 'mod[k]'). Global only exists for grammar compatibility -- Offset can't act on it, no single space to anchor to (Geom warns and skips it). A ring DOES have an effect: Offset independently shifts just the anchor space's own geometry, never the sibling on the other side of any border (see Offset). A ring anchored at 'EXT' (['EXT','*'], order-insensitive) is the one exception -- EXT isn't a real space, so this instead shifts EVERY space touching the grid's own perimeter, each independently on just the side(s) it actually touches; the one-override way to push out a whole outer edge of cells without listing each one's label. Either label side of a pair, or a ring's anchor, may itself be a comma-separated list ('m1,m2', no brackets needed) to address several cells with one override -- Geom expands it into one entry per label (cross product if both pair sides are lists). Optional 3rd item: a side filter, Top/Bottom/Left/Right (or T/B/L/R) -- NARROWS an 'EXT' or ring match to just that one side, or a comma-separated SET of sides ('T,L', no brackets, same list vocabulary) to narrow to exactly that subset; an unrecognized token anywhere drops the whole filter. Left blank (or '*'): applies to EVERY side the matched space has at once -- e.g. a window's glass pane (one cell filling its whole grid) insets on all 4 sides from a single override, no need to list each side; a ring with no filter always affects all 4 (or, for an EXT ring, every perimeter side each matching space individually has)."
+    },
+    {
+      "name": "Offset",
+      "access": "item",
+      "optional": true,
+      "typeHint": "number",
+      "description": "(optional, mm) Meaningful for a pair or a ring selector (global is ignored -- no single space to anchor to). Moves the border: for a pair with a plain side, resizes the two neighbouring cells (cascading into any hosted child); for an 'EXT' pair, a pair where both sides host a child, OR a ring, independently shifts the matched space's own drawn shape AND its matching wall segment together (plus its child's given frame, if it has one) -- a ring never touches the sibling on the other side of any border. See this component's own docstring for the full mechanism Geom applies at solve time."
+    },
+    {
+      "name": "WallLayoutJSON",
+      "access": "item",
+      "optional": true,
+      "typeHint": "string",
+      "description": "(optional) A nested Layout JSON document describing the matched border's own UPRIGHT elevation -- studs, openings, panels -- authored the same way any floor-plan grid is. Rides ALONGSIDE the flat 2D border line, doesn't replace it; created fresh the moment this override carries one. CellWidths MUST be exactly ['auto'] -- Geom fills this in from the matched border's own actual length at solve time; anything else here is REJECTED (warned, not merged in), the width was never the author's to set. CellLengths is authored normally -- the wall's real height, since a floor plan carries no notion of that. The wall's own plane (X along the border's own direction, Y world-up, normal pointing OUT of the matched space) is computed automatically by Geom from the matched border -- not authored here. Meaningful for a PAIR (a real space, or EXT, on each side) OR a RING (a single real anchor, or EXT itself as the anchor, against '*'); only GLOBAL still has no border-owning-child concept to hang this on. A PAIR already matches MORE than one boundary when both sides share a base label (Between=['m','m'] hits every m[i]-vs-m[j] interior boundary at once, one wall each -- the way to address a repeated shared border, like a party wall between adjacent modules, without naming every specific instance pair by hand); a RING goes further, matching every border touching its one anchor regardless of the OTHER side's label (['a','*'] walls every border touching 'a'; ['EXT','*'] walls the whole perimeter of the node -- useful one level up where the children don't share one base label to pair against each other). Between's own optional 3rd item, a side filter (Top/Bottom/Left/Right or T/B/L/R), genuinely narrows WHICH of a multi-match entry's boundaries actually get a wall."
+    }
+  ],
+  "outputs": [
+    {
+      "name": "JSON",
+      "access": "item",
+      "typeHint": "string",
+      "description": "BorderOverride JSON string. Feeds one item of Layout's BorderOverridesJSON input."
+    }
+  ]
+}

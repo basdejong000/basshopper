@@ -1,0 +1,68 @@
+{
+  "name": "Layout",
+  "nickname": "Layout",
+  "schemaType": "Layout",
+  "inputs": [
+    {
+      "name": "JSON",
+      "access": "item",
+      "optional": true,
+      "typeHint": "string",
+      "description": "(optional) Layout JSON string used as the merge base."
+    },
+    {
+      "name": "Label",
+      "access": "item",
+      "optional": true,
+      "typeHint": "string",
+      "description": "(required when nested) matches an entry in the parent's CellLabels grid."
+    },
+    {
+      "name": "Boundary",
+      "access": "item",
+      "optional": true,
+      "description": "(root use only) a Rectangle3d (plane + width + height) -- e.g. a wall's border line extruded vertically. Its plane is copied straight into this document's 'plane' field; its width/height seed CellWidths/CellLengths as a single fixed-mm track EACH, but only when you haven't authored your own. No separate Plane input -- Boundary is the only way in."
+    },
+    {
+      "name": "CellWidths",
+      "access": "list",
+      "optional": true,
+      "description": "Column track sizes (West-to-East): a positive number (mm), 'Nfr', or 'auto' (sized downstream by Geom from a nested child's content). 'minmax()' not yet resolved."
+    },
+    {
+      "name": "CellLengths",
+      "access": "list",
+      "optional": true,
+      "description": "Row track sizes (North-to-South): same grammar as CellWidths."
+    },
+    {
+      "name": "CellLabels",
+      "access": "item",
+      "optional": true,
+      "typeHint": "string",
+      "description": "Per-cell label grid: rows separated by newlines, cells by commas. Row 0 = North, column 0 = West."
+    },
+    {
+      "name": "ChildrenJSON",
+      "access": "list",
+      "optional": true,
+      "typeHint": "string",
+      "description": "Child Layout JSON strings (this same component's JSON output), one per nested region, matched by Label."
+    },
+    {
+      "name": "BorderOverridesJSON",
+      "access": "list",
+      "optional": true,
+      "typeHint": "string",
+      "description": "Border-override JSON strings (from pms-layout-border-override-v0), one per override on THIS node's own grid -- each selects a border via 'between' and carries an optional 'offset' (mm)."
+    }
+  ],
+  "outputs": [
+    {
+      "name": "JSON",
+      "access": "item",
+      "typeHint": "string",
+      "description": "Layout JSON string for the merged (unsolved) node -- feeds a parent's ChildrenJSON, or the outermost instance's JSON feeds the Geom component's (list-access) JSON input. Carries a 'plane' field when Boundary was wired -- Geom reads that directly for this item's placement."
+    }
+  ]
+}

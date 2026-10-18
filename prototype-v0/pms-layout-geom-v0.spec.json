@@ -1,0 +1,68 @@
+{
+  "name": "Geom",
+  "nickname": "Geom",
+  "schemaType": "Layout",
+  "inputs": [
+    {
+      "name": "JSON",
+      "access": "list",
+      "optional": false,
+      "typeHint": "string",
+      "description": "A LIST of independent OUTERMOST Layout instance JSONs (each recursively embeds its own nested tree via childLayouts) -- one floor plan, or a whole list of walls, solved together. Item i's whole tree is output under outer branch {i}. If an item's own JSON carries a 'plane' field (from Layout's Boundary input), that governs its placement; otherwise it defaults to World XY. Each node's own 'borderOverrides' (from LayoutBorderOverride) is applied here at solve time -- see the Borders output. A borderOverrides entry may also carry a 'wallLayout' document -- an upright child hosted on that border (not either adjacent cell), plane computed automatically (outward-normal convention), recursed into the same Cells/Labels/Borders/Topology outputs -- see pms-layout-geom-v0.py's own docstring's WALL LAYOUTS section. Meaningful for a PAIR or a RING Between; only GLOBAL still has no border-owning-child concept. A pair already matches MORE than one boundary when both sides share a base label (['m','m'] hits every m[i]-vs-m[j] interior boundary, one wall each -- no ring needed when there's one repeated label to pair against itself); a ring matches every border touching its one anchor regardless of the OTHER side's label (['a','*'] walls every border touching 'a'; ['EXT','*'] walls the whole perimeter -- useful where the children don't all share one base label). The optional 3rd Between item (a side filter, same T/B/L/R vocabulary as Offset's) genuinely narrows which of a multi-match entry's boundaries get a wall. Phase 1: a diverged interior boundary warns and skips wall placement rather than guessing at mirrored geometry."
+    },
+    {
+      "name": "Plane",
+      "access": "item",
+      "optional": true,
+      "typeHint": "plane",
+      "description": "A TRANSFORM applied to every item's own plane (from its JSON, or World XY), not a replacement for it -- PlaneToPlane(WorldXY, Plane). Unwired (World XY, the default) is the identity transform: each item keeps exactly the plane it already has, so a lone item with no baked-in plane still resolves at World XY unchanged. Wired, it repositions every item together as one rigid unit without disturbing their placement relative to each other."
+    },
+    {
+      "name": "Depth",
+      "access": "item",
+      "optional": true,
+      "typeHint": "integer",
+      "description": "Optional pure FILTER (everything is always computed either way), 0-BASED and IS the default -- unwired = Depth 0 = just the top parent's own boundary. 0 = {i} (that item's own root boundary), 1 = {i;0} (its children as one list), 2 = {i;0;j} (grandchildren, one branch per depth-1 item that had a child), 3 = {i;0;j;k}, etc -- path LENGTH = Depth + 1. Out of range (< 0, or deeper than the tree goes) warns and falls back to Depth 0. The two SELECTORS below only ever see whatever is already inside this Depth slice."
+    },
+    {
+      "name": "Cells",
+      "access": "list",
+      "optional": true,
+      "typeHint": "string",
+      "description": "OPTIONAL SELECTOR: a list of labels to further narrow the Cells (and, in lockstep, Labels) output. A cell is kept if its own label OR that label's base (suffix stripped, e.g. 'mod' matches 'mod[0]'/'mod[1]') is in this list. Any item may itself be a comma-separated list of labels ('a,b', no brackets) to match several at once. Unwired = no filtering, same as not having this input at all."
+    },
+    {
+      "name": "Borders",
+      "access": "list",
+      "optional": true,
+      "typeHint": "string",
+      "description": "OPTIONAL SELECTOR: the SAME grammar as LayoutBorderOverride's own Between, further narrowing the Borders (and, in lockstep, Topology) output -- [a, b] (pair, order-insensitive; either side may itself be a comma-separated label list, 'a,b', no brackets), [label, '*'] (ring -- every border touching that label), ['*', '*'] (global -- every border). 'EXT' works as a literal label for a perimeter run, so ['EXT','*'] is the whole perimeter regardless of label. 'INT' is the mirror keyword, same ring form -- ['INT','*'] -- every INTERIOR border (touches two real spaces, neither EXT); only recognized in that one ring position, not as a literal pair label. An optional 3rd item -- Top/Bottom/Left/Right (or T/B/L/R), comma-separated for several at once -- narrows to a specific grid edge, computed from the node's own local grid coordinates (correct under a rotated Geom.Plane too); has no effect on an INT match (warned) and is bypassed (not applied) on a plain pair of two real spaces, neither EXT, since borderOverrides itself never references side there either. Unwired = no filtering, same as not having this input at all."
+    }
+  ],
+  "outputs": [
+    {
+      "name": "Cells",
+      "access": "tree",
+      "typeHint": "curve",
+      "description": "One closed rectangle per cell. A node's own children sit together in ONE branch as a plain list (not one branch per cell) -- {i} = item i's own root boundary, {i;0} = its children, {i;0;j} = the children of depth-1 item j, and so on, one branch per parent that actually has a bound child. Depth (0-based) selects one such level at a time; unwired defaults to Depth 0. A borderOverrides Offset against 'EXT', or a ring ([label,'*']), shrinks/grows a cell's own drawn shape here directly (whether or not it has a bound child) -- see Borders. Further narrowed by the Cells selector input if wired."
+    },
+    {
+      "name": "Labels",
+      "access": "tree",
+      "typeHint": "string",
+      "description": "Cell label per curve, parallel to Cells -- stays parallel (same kept indices) even when the Cells selector input narrows Cells itself."
+    },
+    {
+      "name": "Borders",
+      "access": "tree",
+      "typeHint": "line",
+      "description": "Shares Cells/Labels' tree shape exactly, filtered by the same Depth: each branch holds the unique line segments (interior divisions + perimeter, run-segmented) bounding the cells shown in that SAME branch of Cells at that Depth -- EXCEPT once an independent offset (both-children pair, or a ring against a real sibling) has moved either touching space's own edge along an INTERIOR boundary, in which case that one segment DUPLICATES into one per diverged space (each matching its own cell's actual edge exactly, both still reporting the same 2-label Topology pair) rather than freezing at a stale position that matches neither cell -- see DUPLICATE INTERIOR SEGMENTS in pms-layout-geom-v0.py's own docstring. Depth 0 is the one exception -- the top parent has no grid of its own, so its borders are just its own 4 sides (not yet subject to borderOverrides). An Offset override moves a border: for a shared-track pair (at least one plain side) it resizes the two neighbouring cells (and cascades into any child); for an independent one ('EXT', both sides of a pair hosting a child, or a ring [label,'*']) it shifts the affected space's own drawn shape AND its matching wall segment(s) together on every side it has, trimming each segment's LENGTH to match too (not just its position) if that same space is also offset perpendicular to it (an optional Top/Bottom/Left/Right side filter narrows that to just one side). Suppressing a border entirely is what the Borders selector input is for (or a plain Cull Pattern keyed on Topology) -- not something this output does itself. Further narrowed by that selector input if wired."
+    },
+    {
+      "name": "Topology",
+      "access": "tree",
+      "typeHint": "string",
+      "description": "A GRAFTED version of Borders: border k within a Borders branch B gets its own branch B{;k}, holding exactly 2 items -- the label of every space that border touches ('EXT' filling in for a perimeter run, the edge of that node's own grid). Depth applies the same as Borders (one level deeper internally, handled automatically). Stays parallel to Borders (each kept border's topology entry re-addressed to its new position) even when the Borders selector input narrows Borders itself."
+    }
+  ]
+}
