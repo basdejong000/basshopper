@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32">
+  <!-- Reload: two arrows chasing each other around a circle -->
+  <path d="M26.2 13.2 A10.5 10.5 0 0 0 7.4 9.8" fill="none" stroke="#1F6FEB" stroke-width="2.6" stroke-linecap="round"/>
+  <path d="M5.8 18.8 A10.5 10.5 0 0 0 24.6 22.2" fill="none" stroke="#1F6FEB" stroke-width="2.6" stroke-linecap="round"/>
+  <!-- Arrowheads -->
+  <path d="M4.2 5.6 L5.6 12.2 L12 10.2 Z" fill="#1F6FEB" stroke="#1F6FEB" stroke-width="1.2" stroke-linejoin="round"/>
+  <path d="M27.8 26.4 L26.4 19.8 L20 21.8 Z" fill="#1F6FEB" stroke="#1F6FEB" stroke-width="1.2" stroke-linejoin="round"/>
+  <!-- Grasshopper toolbar being reloaded: a small grey capsule in the middle -->
+  <rect x="11" y="12" width="10" height="8" rx="3" fill="#E6E6E6" stroke="#2B2B2B" stroke-width="1.6"/>
+</svg>

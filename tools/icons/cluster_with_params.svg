@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32">
+  <!-- Cluster: a grey capsule with a nested box, i.e. objects inside -->
+  <rect x="10" y="5" width="12" height="22" rx="4" fill="#E6E6E6" stroke="#2B2B2B" stroke-width="1.8"/>
+  <rect x="13" y="10" width="6" height="12" rx="2" fill="none" stroke="#2B2B2B" stroke-width="1.8"/>
+  <!-- Wires through the outside parameters -->
+  <path d="M7 16 H10 M22 16 H25" fill="none" stroke="#1F6FEB" stroke-width="2.2" stroke-linecap="round"/>
+  <!-- The added parameters, left and right of the cluster -->
+  <rect x="1.5" y="10" width="6" height="12" rx="2.5" fill="#1F6FEB" stroke="#2B2B2B" stroke-width="1.6"/>
+  <rect x="24.5" y="10" width="6" height="12" rx="2.5" fill="#1F6FEB" stroke="#2B2B2B" stroke-width="1.6"/>
+</svg>

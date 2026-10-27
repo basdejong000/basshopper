@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32">
+  <!-- Incoming data tree: a wire that forks, i.e. branches -->
+  <path d="M7 16 H4.5 M4.5 16 L1.5 8.5 M4.5 16 L1.5 23.5" fill="none" stroke="#1F6FEB" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- Grasshopper parameter capsule with output grip -->
+  <rect x="7" y="5" width="21" height="22" rx="5" fill="#E6E6E6" stroke="#2B2B2B" stroke-width="1.8"/>
+  <circle cx="28" cy="16" r="2.5" fill="#FFFFFF" stroke="#2B2B2B" stroke-width="1.5"/>
+  <!-- [n] : the branch-depth suffix -->
+  <polyline points="12.5,9.5 10.5,9.5 10.5,22.5 12.5,22.5" fill="none" stroke="#2B2B2B" stroke-width="2" stroke-linejoin="round"/>
+  <polyline points="22.5,9.5 24.5,9.5 24.5,22.5 22.5,22.5" fill="none" stroke="#2B2B2B" stroke-width="2" stroke-linejoin="round"/>
+  <path d="M14.6 22.2 V12 M14.6 15.2 Q14.6 12 17.6 12 Q20.6 12 20.6 15.2 V22.2" fill="none" stroke="#1F6FEB" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
