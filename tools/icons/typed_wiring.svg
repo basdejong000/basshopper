@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32">
+  <!-- Two capsules joined by a wire -->
+  <rect x="1.5" y="3" width="10" height="13" rx="3.5" fill="#E6E6E6" stroke="#2B2B2B" stroke-width="1.6"/>
+  <rect x="20.5" y="3" width="10" height="13" rx="3.5" fill="#E6E6E6" stroke="#2B2B2B" stroke-width="1.6"/>
+  <path d="M11.5 9.5 H20.5" fill="none" stroke="#1F6FEB" stroke-width="2.3" stroke-linecap="round"/>
+  <!-- Typing field with a text cursor -->
+  <rect x="3" y="20" width="26" height="9" rx="2" fill="#FFFFFF" stroke="#1F6FEB" stroke-width="1.8"/>
+  <path d="M8 22.5 V26.5 M13 24.5 H17" fill="none" stroke="#2B2B2B" stroke-width="1.8" stroke-linecap="round"/>
+</svg>

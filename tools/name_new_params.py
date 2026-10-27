@@ -23,6 +23,7 @@ from Grasshopper.Kernel import IGH_Param
 
 SETTING = "basshopper:NameNewParams"
 BUTTON_NAME = "basshopper:Name new params"
+TYPED_WIRING_SETTING = "basshopper:TypedWiring"  # when on, its box handles naming
 STATE = "_basshopper_name_new_params"  # sys attribute with the live handlers, so a reload can detach them
 
 # Grasshopper methods that place a new object because the user asked for it.
@@ -57,7 +58,13 @@ def update_button():
     on = is_on()
     button.Checked = on
     button.ToolTipText = ("Name new params ({})\nAsk for a name when you place a param with its default name"
-                          .format("on" if on else "off"))
+                          .format("on" if on else "off")) + key_hint(button)
+
+
+def key_hint(button):
+    # The toolbar loader stores the button's number key in Tag.
+    hint = button.Tag
+    return "\n" + hint if isinstance(hint, str) and hint else ""
 
 
 def set_on(on):
@@ -96,6 +103,8 @@ def on_objects_added(sender, args):
     try:
         if not is_on() or not placed_by_user():
             return
+        if Grasshopper.Instances.Settings.GetValue(TYPED_WIRING_SETTING, False):
+            return  # Typed wiring's box asks for the name instead, so there's only one box
         params = [o for o in args.Objects if is_param_object(o)]
         if not params:
             return
@@ -232,4 +241,9 @@ def show_menu():
 
 
 if __name__ == "__main__":
-    show_menu()
+    if globals().get("TRIGGER") == "key":
+        if getattr(sys, STATE, None) is None:
+            install_listener()
+        set_on(not is_on())  # number key: just flip it
+    else:
+        show_menu()

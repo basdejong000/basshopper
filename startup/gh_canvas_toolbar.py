@@ -8,8 +8,13 @@ Add it to Rhino's startup commands (Options > General > Command lists):
 
 If Grasshopper isn't open yet, the buttons are added as soon as it opens.
 Running it again replaces the buttons, so it doubles as a reload.
+
+Number keys follow the button order: 1 = the first button's left-click, Shift+1 its
+right-click (when it has one), ... 9, then 0 for the 10th. They only work while the canvas
+has focus, never while you type text (panels, renaming, search).
 """
 import os
+import sys
 
 import Grasshopper
 import Rhino
@@ -40,34 +45,56 @@ BUTTONS = [
     ("Organize nodes",
      "Organize nodes\nStack the selection vertically, keeping its order\nLeft-click: align left\nRight-click: align right",
      "organize_nodes.py", "organize_nodes.svg", "organize_nodes.py"),
+    ("Typed wiring",
+     "Typed wiring\nWire two objects by typing names, e.g. C-Crv\n"
+     "Left-click: On/Off (open the box after every placement)\n"
+     "Right-click or Ctrl+Shift+L: wire the selection / last two placed now",
+     "typed_wiring.py", "typed_wiring.svg", "typed_wiring.py"),
 ]
 
 # Tools with a listener that has to run all session, not only on a click: (script, function).
 LISTENERS = [
     ("paste_link_params.py", "install_listener"),
     ("name_new_params.py", "install_listener"),
+    ("typed_wiring.py", "install_listener"),
 ]
+
+
+KEY_LABELS = "1234567890"  # button n gets KEY_LABELS[n]; buttons after the 10th get no key
+DIGIT_KEYS = [getattr(WF.Keys, "D" + c) for c in KEY_LABELS]
+NUMPAD_KEYS = [getattr(WF.Keys, "NumPad" + c) for c in KEY_LABELS]
+HOTKEY_STATE = "_basshopper_hotkeys"  # sys attribute with the live key handler, so a reload can detach it
 
 
 def log(msg):
     Rhino.RhinoApp.WriteLine("basshopper: " + str(msg))
 
 
-def run_tool(path, mouse_button="left"):
+def run_tool(path, mouse_button="left", trigger="click"):
     # Execute the tool in-process: faster than the Script Editor, and always the file as it is now.
+    # TRIGGER tells the tool whether a click or a number key ran it (toggles flip on a key).
     try:
         with open(path, encoding="utf-8") as f:
             code = compile(f.read(), path, "exec")
-        exec(code, {"__name__": "__main__", "__file__": path, "MOUSE_BUTTON": mouse_button})
+        exec(code, {"__name__": "__main__", "__file__": path,
+                    "MOUSE_BUTTON": mouse_button, "TRIGGER": trigger})
     except Exception as e:
         log("{} failed: {}".format(os.path.basename(path), e))
 
 
-def make_button(name, tooltip, script, icon, size, right_script=None):
+def key_hint(index, has_right):
+    if index >= len(KEY_LABELS):
+        return ""
+    key = KEY_LABELS[index]
+    return "Key: {}{}".format(key, " / Shift+{} (right-click)".format(key) if has_right else "")
+
+
+def make_button(name, tooltip, script, icon, size, right_script=None, hint=""):
     script_path = os.path.join(REPO, "tools", script)
     button = WF.ToolStripButton()
     button.Name = TAG + name
-    button.ToolTipText = tooltip
+    button.Tag = hint  # toggle tools rewrite their tooltip and append this
+    button.ToolTipText = tooltip + ("\n" + hint if hint else "")
     button.DisplayStyle = WF.ToolStripItemDisplayStyle.Image
     with open(os.path.join(REPO, "tools", "icons", icon), encoding="utf-8") as f:
         button.Image = Rhino.UI.DrawingUtilities.BitmapFromSvg(f.read(), size.Width, size.Height)
@@ -93,12 +120,66 @@ def install():
         toolbar.Items.Remove(item)
     toolbar.Items.Add(WF.ToolStripSeparator())
     toolbar.Items[toolbar.Items.Count - 1].Name = TAG + "separator"
-    for name, tooltip, script, icon, *right in BUTTONS:
-        toolbar.Items.Add(make_button(name, tooltip, script, icon, toolbar.ImageScalingSize, *right))
+    actions = []  # per button: (left-click script path, right-click script path or None)
+    for index, (name, tooltip, script, icon, *right) in enumerate(BUTTONS):
+        right_script = right[0] if right else None
+        hint = key_hint(index, bool(right_script))
+        toolbar.Items.Add(make_button(name, tooltip, script, icon, toolbar.ImageScalingSize,
+                                      right_script, hint))
+        actions.append((os.path.join(REPO, "tools", script),
+                        os.path.join(REPO, "tools", right_script) if right_script else None))
     log("{} button(s) added to the Grasshopper toolbar".format(len(BUTTONS)))
+    install_hotkeys(actions)
     for script, function in LISTENERS:
         install_listener(script, function)
     return True
+
+
+def typing_in_text():
+    # Follow the focus down from the editor; text fields (panel/rename/zoom box) keep their keys.
+    control = Grasshopper.Instances.DocumentEditor
+    while isinstance(control, WF.ContainerControl) and control.ActiveControl is not None:
+        control = control.ActiveControl
+    return isinstance(control, (WF.TextBoxBase, WF.ComboBox))
+
+
+def install_hotkeys(actions):
+    editor = Grasshopper.Instances.DocumentEditor
+    canvas = Grasshopper.Instances.ActiveCanvas
+    # The editor sees keys first when it previews them; otherwise the canvas gets them.
+    target = editor if editor is not None and editor.KeyPreview else canvas
+    old = getattr(sys, HOTKEY_STATE, None)
+    if old:
+        try:
+            old["target"].KeyDown -= old["handler"]
+        except Exception:
+            pass
+    if target is None:
+        return
+
+    def on_key_down(sender, e):
+        try:
+            if e.Control or e.Alt or typing_in_text():
+                return
+            if e.KeyCode in DIGIT_KEYS:
+                index = DIGIT_KEYS.index(e.KeyCode)
+            elif e.KeyCode in NUMPAD_KEYS and not e.Shift:
+                index = NUMPAD_KEYS.index(e.KeyCode)
+            else:
+                return
+            if index >= len(actions):
+                return
+            path = actions[index][1] if e.Shift else actions[index][0]
+            if path is None:
+                return
+            e.Handled = True
+            e.SuppressKeyPress = True
+            run_tool(path, "right" if e.Shift else "left", "key")
+        except Exception as ex:
+            log("hotkey failed: {}".format(ex))
+
+    target.KeyDown += on_key_down
+    setattr(sys, HOTKEY_STATE, {"target": target, "handler": on_key_down})
 
 
 def install_listener(script, function):

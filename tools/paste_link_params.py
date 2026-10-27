@@ -52,7 +52,13 @@ def update_button():
     on = is_on()
     button.Checked = on
     button.ToolTipText = ("Paste link ({})\nWire pasted parameters to the parameter they were copied from"
-                          .format("on" if on else "off"))
+                          .format("on" if on else "off")) + key_hint(button)
+
+
+def key_hint(button):
+    # The toolbar loader stores the button's number key in Tag.
+    hint = button.Tag
+    return "\n" + hint if isinstance(hint, str) and hint else ""
 
 
 def set_on(on):
@@ -187,4 +193,9 @@ def show_menu():
 
 
 if __name__ == "__main__":
-    show_menu()
+    if globals().get("TRIGGER") == "key":
+        if getattr(sys, STATE, None) is None:
+            install_listener()
+        set_on(not is_on())  # number key: just flip it
+    else:
+        show_menu()
