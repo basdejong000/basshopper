@@ -51,7 +51,8 @@ def update_button():
         return
     on = is_on()
     button.Checked = on
-    button.ToolTipText = ("Paste link ({})\nWire pasted parameters to the parameter they were copied from"
+    button.ToolTipText = ("Paste link ({})\nWire pasted parameters to the parameter they were copied from\n"
+                          "Left-click: On/Off menu\nRight-click: switch on/off"
                           .format("on" if on else "off")) + key_hint(button)
 
 
@@ -193,9 +194,9 @@ def show_menu():
 
 
 if __name__ == "__main__":
-    if globals().get("TRIGGER") == "key":
+    if globals().get("TRIGGER") == "key" or globals().get("MOUSE_BUTTON") == "right":
         if getattr(sys, STATE, None) is None:
             install_listener()
-        set_on(not is_on())  # number key: just flip it
+        set_on(not is_on())  # number key (with or without Shift) or right-click: just flip it
     else:
         show_menu()

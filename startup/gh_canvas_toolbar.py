@@ -34,11 +34,13 @@ BUTTONS = [
      "Cluster with params\nCluster the selection and repeat its boundary parameters outside the cluster",
      "cluster_with_params.py", "cluster_with_params.svg"),
     ("Paste link",
-     "Paste link\nWire pasted parameters to the parameter they were copied from (On/Off)",
-     "paste_link_params.py", "paste_link_params.svg"),
+     "Paste link\nWire pasted parameters to the parameter they were copied from\n"
+     "Left-click: On/Off menu\nRight-click: switch on/off",
+     "paste_link_params.py", "paste_link_params.svg", "paste_link_params.py"),
     ("Name new params",
-     "Name new params\nAsk for a name when you place a param with its default name (On/Off)",
-     "name_new_params.py", "name_new_params.svg"),
+     "Name new params\nAsk for a name when you place a param with its default name\n"
+     "Left-click: On/Off menu\nRight-click: switch on/off",
+     "name_new_params.py", "name_new_params.svg", "name_new_params.py"),
     ("Input wires",
      "Input wires\nLeft-click: hide the incoming wires of the selection\nRight-click: show them again",
      "input_wires.py", "input_wires.svg", "input_wires.py"),
@@ -47,9 +49,13 @@ BUTTONS = [
      "organize_nodes.py", "organize_nodes.svg", "organize_nodes.py"),
     ("Typed wiring",
      "Typed wiring\nWire two objects by typing names, e.g. C-Crv\n"
-     "Left-click: On/Off (open the box after every placement)\n"
-     "Right-click or Ctrl+Shift+L: wire the selection / last two placed now",
+     "Left-click or Ctrl+Shift+L: wire the selection / last two placed now\n"
+     "Right-click: On/Off menu (open the box after every placement)",
      "typed_wiring.py", "typed_wiring.svg", "typed_wiring.py"),
+    ("Output params",
+     "Output params\nMake params for outputs of the selected component(s)\n"
+     "Digits tick outputs, Enter/Space makes them",
+     "output_params.py", "output_params.svg"),
 ]
 
 # Tools with a listener that has to run all session, not only on a click: (script, function).

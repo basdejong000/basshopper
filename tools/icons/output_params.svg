@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32">
+  <!-- Component capsule with two output grips -->
+  <rect x="1.5" y="5" width="13" height="22" rx="4" fill="#E6E6E6" stroke="#2B2B2B" stroke-width="1.8"/>
+  <!-- Wires out to two new params -->
+  <path d="M14.5 11 H20 M14.5 21 H20" fill="none" stroke="#1F6FEB" stroke-width="2.3" stroke-linecap="round"/>
+  <circle cx="14.5" cy="11" r="2.2" fill="#FFFFFF" stroke="#2B2B2B" stroke-width="1.5"/>
+  <circle cx="14.5" cy="21" r="2.2" fill="#FFFFFF" stroke="#2B2B2B" stroke-width="1.5"/>
+  <!-- New params (blue outline) -->
+  <rect x="20" y="7" width="10" height="8" rx="2.5" fill="#E6E6E6" stroke="#1F6FEB" stroke-width="1.8"/>
+  <rect x="20" y="17" width="10" height="8" rx="2.5" fill="#E6E6E6" stroke="#1F6FEB" stroke-width="1.8"/>
+</svg>

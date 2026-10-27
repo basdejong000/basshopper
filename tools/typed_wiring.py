@@ -23,9 +23,10 @@ When the receiver is a standalone param, the part after the dash is its new name
 C-Pts wires output C into it and names it Pts; just  Pts  only renames it.
 
 When the box opens:
-- On (toolbar left-click menu): right after you place an object from the ribbon or the
-  double-click search. The sender is the object you selected or placed most recently.
-- Ctrl+Shift+L or a right-click on the toolbar button, any time: with two objects selected,
+- On (toolbar right-click menu, or Shift + its number key): right after you place an object
+  from the ribbon or the double-click search. The sender is the object you selected or
+  placed most recently.
+- A left-click on the toolbar button, its number key, or Ctrl+Shift+L, any time: with two objects selected,
   the left one sends; with one selected, it receives from the object selected or placed
   before it; otherwise the last two objects selected or placed.
 Enter wires, Esc closes. Ctrl+Z undoes the wires.
@@ -95,8 +96,8 @@ def update_button():
     on = is_on()
     button.Checked = on
     button.ToolTipText = ("Typed wiring ({})\nWire two objects by typing names, e.g. C-Crv\n"
-                          "Left-click: On/Off (open the box after every placement)\n"
-                          "Right-click or Ctrl+Shift+L: wire the selection / last two placed now"
+                          "Left-click or Ctrl+Shift+L: wire the selection / last two placed now\n"
+                          "Right-click: On/Off menu (open the box after every placement)"
                           .format("on" if on else "off")) + key_hint(button)
 
 
@@ -247,6 +248,14 @@ def execute(doc, plans):
 
 
 # ---------------------------------------------------------------- box
+
+def on_screen(form, point):
+    # Keep the whole box inside the screen Grasshopper is on: a box off-screen blocks everything.
+    area = WF.Screen.FromControl(Grasshopper.Instances.DocumentEditor).WorkingArea
+    x = max(area.Left, min(point.X, area.Right - form.Width))
+    y = max(area.Top, min(point.Y, area.Bottom - form.Height))
+    return SD.Point(x, y)
+
 
 def screen_point(obj):
     try:
@@ -459,7 +468,7 @@ def open_box(doc, sender, receiver):
         form.Controls.Add(control)
     form.AcceptButton = ok
     form.CancelButton = cancel
-    form.Location = screen_point(receiver)
+    form.Location = on_screen(form, screen_point(receiver))
     form.Shown += lambda s, e: show(*pick)
     if canvas is not None:
         canvas.CanvasPostPaintWires += paint
@@ -608,7 +617,13 @@ def on_idle(sender, args):
         try:
             if not alive(doc, receiver):
                 continue
-            open_box(doc, source if alive(doc, source) else None, receiver)
+            source = source if alive(doc, source) else None
+            open_box(doc, source, receiver)
+            # Wiring with digits/arrows closes the box before you could name the new param,
+            # so ask for the name next (only if it still has its default name).
+            if source is not None and alive(doc, receiver) and naming_on() \
+                    and is_param_object(receiver) and has_default_name(receiver):
+                open_box(doc, None, receiver)
         except Exception:
             log(traceback.format_exc())
 
@@ -724,9 +739,10 @@ def show_menu():
 if __name__ == "__main__":
     if getattr(sys, STATE, None) is None:
         install_listener()  # e.g. the toolbar was loaded by an older loader
-    if MOUSE_BUTTON == "right":
-        getattr(sys, STATE)["open_for_selection"]()  # uses the listener's placement history
-    elif globals().get("TRIGGER") == "key":
-        set_on(not is_on())  # number key: just flip it
+    key = globals().get("TRIGGER") == "key"
+    if MOUSE_BUTTON != "right":
+        getattr(sys, STATE)["open_for_selection"]()  # left-click / plain key: wire now
+    elif key:
+        set_on(not is_on())  # Shift+key: just flip it
     else:
-        show_menu()
+        show_menu()  # right-click: On/Off menu

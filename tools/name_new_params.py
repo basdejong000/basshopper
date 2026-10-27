@@ -57,7 +57,8 @@ def update_button():
         return
     on = is_on()
     button.Checked = on
-    button.ToolTipText = ("Name new params ({})\nAsk for a name when you place a param with its default name"
+    button.ToolTipText = ("Name new params ({})\nAsk for a name when you place a param with its default name\n"
+                          "Left-click: On/Off menu\nRight-click: switch on/off"
                           .format("on" if on else "off")) + key_hint(button)
 
 
@@ -124,12 +125,25 @@ def on_idle(sender, args):
         try:
             if doc.FindObject(param.InstanceGuid, True) is None or not has_default_name(param):
                 continue  # deleted, or named already (e.g. by a script)
-            name = ask_name(param)
-            if name:
-                param.NickName = name
-                param.Attributes.ExpireLayout()
+            name_param(param)
         except Exception:
             log(traceback.format_exc())
+
+
+def name_param(param):
+    """Ask for a name and apply it. Other tools call this too (e.g. Output params)."""
+    name = ask_name(param)
+    if name:
+        param.NickName = name
+        param.Attributes.ExpireLayout()
+
+
+def on_screen(form, point):
+    # Keep the whole box inside the screen Grasshopper is on: a box off-screen blocks everything.
+    area = WF.Screen.FromControl(Grasshopper.Instances.DocumentEditor).WorkingArea
+    x = max(area.Left, min(point.X, area.Right - form.Width))
+    y = max(area.Top, min(point.Y, area.Bottom - form.Height))
+    return SD.Point(x, y)
 
 
 def screen_point(param):
@@ -166,7 +180,7 @@ def ask_name(param):
         form.Controls.Add(control)
     form.AcceptButton = ok
     form.CancelButton = cancel
-    form.Location = screen_point(param)
+    form.Location = on_screen(form, screen_point(param))
 
     result = form.ShowDialog(Grasshopper.Instances.DocumentEditor)
     name = box.Text.strip()
@@ -216,7 +230,8 @@ def install_listener():
         attach(doc)
     setattr(sys, STATE, {"objects_added": on_objects_added,
                          "document_added": on_document_added,
-                         "document_removed": on_document_removed})
+                         "document_removed": on_document_removed,
+                         "name_param": name_param})
     update_button()
     log("listener installed ({})".format("on" if is_on() else "off"))
 
@@ -241,9 +256,9 @@ def show_menu():
 
 
 if __name__ == "__main__":
-    if globals().get("TRIGGER") == "key":
+    if globals().get("TRIGGER") == "key" or globals().get("MOUSE_BUTTON") == "right":
         if getattr(sys, STATE, None) is None:
             install_listener()
-        set_on(not is_on())  # number key: just flip it
+        set_on(not is_on())  # number key (with or without Shift) or right-click: just flip it
     else:
         show_menu()
